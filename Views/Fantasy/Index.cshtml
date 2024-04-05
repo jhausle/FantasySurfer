@@ -1,0 +1,103 @@
+﻿@model JokesWebApp.Models.LeagueInfo
+
+@{
+    ViewData["Title"] = "Fantasy";
+}
+
+<h1>Fantasy</h1>
+
+<p>
+    <a asp-action="Refresh">Refresh Page</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th colspan="3">@Model.InfoDictionary["Total"].LeagueName</th>
+        </tr>
+        <tr>
+            <th>Rank</th>
+            <th>Manager Name</th>
+            <th>Total Points</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.InfoDictionary["Total"].Members.Count; i++)
+        {
+            <tr>
+                <td>@Model.InfoDictionary["Total"].Members[i].rank.ToString()</td>
+                <td>
+                    @Model.InfoDictionary["Total"].Members[i].TeamName
+                </td>
+                <td>
+                    @Model.InfoDictionary["Total"].Members[i].rankingPoints.ToString()
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th colspan="3">@Model.InfoDictionary["WSL"].LeagueName</th>
+        </tr>
+        <tr>
+            <th>Rank</th>
+            <th>Team Name</th>
+            <th>Manager Name</th>
+            <th>WSL Points</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.InfoDictionary["WSL"].Members.Count; i++)
+        {
+            <tr>
+                <td>@Model.InfoDictionary["WSL"].Members[i].rank</td>
+                <td>
+                    @Model.InfoDictionary["WSL"].Members[i].TeamName
+                </td>
+                <td>
+                    @Model.InfoDictionary["WSL"].Members[i].OwnerName
+                </td>
+                <td>
+                    @Model.InfoDictionary["WSL"].Members[i].Points.ToString()
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th colspan="3">@Model.InfoDictionary["FS"].LeagueName</th>
+        </tr>
+        <tr>
+            <th>Rank</th>
+            <th>Team Name</th>
+            <th>Manager Name</th>
+            <th>FS Points</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.InfoDictionary["FS"].Members.Count; i++)
+        {
+            <tr>
+                <td>@Model.InfoDictionary["FS"].Members[i].rank</td>
+                <td>
+                    @Model.InfoDictionary["FS"].Members[i].TeamName
+                </td>
+                <td>
+                    @Model.InfoDictionary["WSL"].Members[i].OwnerName
+                </td>
+                <td>
+                    @Model.InfoDictionary["FS"].Members[i].Points.ToString()
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

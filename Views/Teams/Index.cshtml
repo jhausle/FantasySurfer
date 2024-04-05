@@ -1,0 +1,104 @@
+﻿@model JokesWebApp.Models.LeagueInfo
+
+@{
+    ViewData["Title"] = "Fantasy Teams";
+}
+
+<h1>Fantasy Teams</h1>
+
+
+<h1>FS Teams</h1>
+@foreach (var member in Model.InfoDictionary["FS"].Members)
+{
+<table class="table">
+    <thead>
+        <tr>
+            <th colspan="3">@member.OwnerName</th>
+        </tr>
+        <tr>
+            <th>Surfer Name</th>
+            <th>Surfer Cost</th>
+            <th>Points Scored</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        @foreach(var surfer in member.fsRoster.surfers)
+        {
+            <tr>
+                <td>
+                    @surfer.Name
+                </td>
+                <td>
+                    @surfer.Price
+                </td>
+                    <td>
+                        @surfer.Points.ToString()
+                    </td>
+            </tr>
+        }
+    </tbody>
+</table>
+}
+
+<h1>WSL Teams</h1>
+@foreach (var member in Model.InfoDictionary["WSL"].Members)
+{
+<table class="table">
+    <thead>
+        <tr>
+            <th colspan="3">@member.OwnerName</th>
+        </tr>
+        <tr>
+            <th>Surfer Name</th>
+            <th>Surfer Country</th>
+            <th>Points Scored</th>
+        </tr>
+
+    </thead>
+    <tbody>
+        @foreach(var surfer in member.wslRoster.tierASurfers)
+        {
+            <tr>
+                <td>
+                    @surfer.Name
+                </td>
+                <td>
+                    @surfer.Country
+                </td>
+                    <td>
+                        @surfer.Points.ToString()
+                    </td>
+            </tr>
+        }
+        @foreach(var surfer in member.wslRoster.tierBSurfers)
+        {
+            <tr>
+                <td>
+                    @surfer.Name
+                </td>
+                <td>
+                    @surfer.Country
+                </td>
+                    <td>
+                        @surfer.Points
+                    </td>
+            </tr>
+        }
+        @foreach(var surfer in member.wslRoster.tierCSurfers)
+        {
+            <tr>
+                <td>
+                    @surfer.Name
+                </td>
+                <td>
+                    @surfer.Country
+                </td>
+                    <td>
+                        @surfer.Points
+                    </td>
+            </tr>
+        }
+    </tbody>
+</table>
+}
