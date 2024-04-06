@@ -9,6 +9,19 @@
 <p>
     <a asp-action="Refresh">Refresh Page</a>
 </p>
+<label for="contestSelector">Contest</label>
+<form method="post" asp-controller="Fantasy" asp-action="Index">
+    <div class="form-group">
+        <select id="contestSelector" name="selectedContest">
+            <option value="">--Select--</option>
+            <option value="0">Pipeline</option>
+            <option value="1">Sunset</option>
+            <option value="2">SuperTubos</option>
+            <option value="3">Bells</option>
+        </select>
+    </div>
+    <button type="submit">Load</button>
+</form>
 
 <table class="table">
     <thead>

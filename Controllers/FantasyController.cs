@@ -25,19 +25,25 @@ namespace JokesWebApp.Controllers
         private SingleLeagueInfo FSInfo = new SingleLeagueInfo();
         private LeagueInfo TotalInfo = new LeagueInfo();
         private readonly string fsurl = "https://fantasy.surfer.com/club/members/?id=6956";
-        private readonly int ContestId = 3;
+        private int ContestId = 3;
         public FantasyController(ApplicationDbContext context) {
             _context = context;
         }
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> IndexAsync(int contestId)
         {
-            DateTime lastupdated = (DateTime)_context.Contest
+            if (contestId != 0)
+                ContestId = contestId;
+            var lastupdated = _context.Contest
                 .Where(x => x.Id == ContestId)
                 .Select(x=> x.LastUpdatedAt).FirstOrDefault();
-            var currtime = DateTime.Now;
-            var newtime = lastupdated.AddMinutes(5);
-            var diff = currtime - newtime;
-            var goToDb = (DateTime.Now < lastupdated.AddMinutes(5));
+            var goToDb = false;
+            if (lastupdated != null)
+            {
+                var currtime = DateTime.Now;
+                var newtime = ((DateTime)lastupdated).AddMinutes(5);
+                var diff = currtime - newtime;
+                goToDb = (DateTime.Now < ((DateTime)lastupdated).AddMinutes(5));
+            }
             if (goToDb)
             {
                 // Get WSL league standings
@@ -390,6 +396,14 @@ namespace JokesWebApp.Controllers
                 }
             }
             return wikiLink;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Index([FromForm] string selectedContest)
+        {
+            int contestId = int.Parse(selectedContest)+1;
+            ContestId = contestId;
+            return RedirectToAction("", "Fantasy", new { contestId = contestId});
         }
     }
 }

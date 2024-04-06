@@ -11,6 +11,7 @@ namespace JokesWebApp.Models
             InfoDictionary = new Dictionary<string, SingleLeagueInfo>();
         }
 
+        public int contestID;
         public Dictionary<string, SingleLeagueInfo> InfoDictionary;
     }
 
