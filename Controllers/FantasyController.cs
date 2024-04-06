@@ -2,6 +2,7 @@
 using JokesWebApp.Adapters;
 using JokesWebApp.Data;
 using JokesWebApp.Models;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -9,13 +10,15 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace JokesWebApp.Controllers
 {
-    
     public class FantasyController : Controller
     {
+        const string WSLId = "WSL";
+        const string FSId = "FS";
         private readonly ApplicationDbContext _context;
         private List<string> _fans = new List<string>();
         private SingleLeagueInfo Info = new SingleLeagueInfo();
@@ -28,23 +31,26 @@ namespace JokesWebApp.Controllers
         }
         public async Task<IActionResult> IndexAsync()
         {
-            /*            var lastupdated = _context.Contest
-                            .Where(x => x.Id == ContestId)
-                            .Select(x=> x.LastUpdatedAt).FirstOrDefault();
-                        var goToDb = (lastupdated < DateTime.Now.AddMinutes(5));
-            */
-            var goToDb = false;
+            DateTime lastupdated = (DateTime)_context.Contest
+                .Where(x => x.Id == ContestId)
+                .Select(x=> x.LastUpdatedAt).FirstOrDefault();
+            var currtime = DateTime.Now;
+            var newtime = lastupdated.AddMinutes(5);
+            var diff = currtime - newtime;
+            var goToDb = (DateTime.Now < lastupdated.AddMinutes(5));
             if (goToDb)
             {
                 // Get WSL league standings
                 Info = WslAdapter.LoadLeagueInfo(_context, ContestId);
+                TotalInfo.InfoDictionary.Add("WSL", Info);
 
                 // Get FS league standing
                 FSInfo = FsAdapter.LoadLeagueInfo(_context, ContestId);
+                TotalInfo.InfoDictionary.Add("FS", FSInfo);
             }
             else
             {
-                string url = "https://ctfantasy.worldsurfleague.com/group/165417";
+                string url = "https://ctfantasy.worldsurfleague.com/group/165417?displayType=gameStop&gameStopNumber=" + ContestId.ToString();
                 var resp = CallUrl(url).Result;
                 Info = ParseWSLLeagueInfo(resp);
                 TotalInfo.InfoDictionary.Add("WSL", Info);
@@ -58,6 +64,10 @@ namespace JokesWebApp.Controllers
                 var contestEntity = _context.Contest.Find(3);
                 contestEntity.LastUpdatedAt = DateTime.Now;
                 _context.SaveChanges();
+
+                // Save points data
+                SavePoints(Info, ContestId, WSLId);
+                SavePoints(FSInfo, ContestId, FSId);
             }
 
             // Take both and combine into one ranking
@@ -65,6 +75,47 @@ namespace JokesWebApp.Controllers
             TotalInfo.InfoDictionary.Add("Total", totalInfo);
 
             return View(TotalInfo);
+        }
+
+        private void SavePoints(SingleLeagueInfo info, int contestId, string leagueId)
+        {
+            bool needSave = false;
+            foreach(var member in info.Members)
+            {
+                // get the memberID for the team
+                var memberId = _context.MemberInfo
+                    .Where(x => (x.FirstName + " " + x.LastName) == member.OwnerName)
+                    .Select(x => x.Id)
+                    .FirstOrDefault();
+                var cont = contestId.ToString();
+                var teamId = member.TeamId;
+                var league = leagueId;
+                var points = member.Points;
+                var pointEnt = _context.Points
+                    .Where(x => x.TeamId == memberId.ToString() && x.ContestId == cont && x.LeagueId == leagueId)
+                    .FirstOrDefault();
+                if (pointEnt != null )
+                {
+                    if (points != pointEnt.Value)
+                    {
+                        pointEnt.Value = points;
+                        needSave = true;
+                    }
+                } else
+                {
+                    var newPoints = new Points()
+                    {
+                        ContestId= contestId.ToString(),
+                        TeamId= memberId.ToString(),
+                        LeagueId= leagueId,
+                        Value= points
+                    };
+                    _context.Points.Add(newPoints);
+                    needSave = true;
+                }
+            }
+            if(needSave)
+                _context.SaveChanges();
         }
 
         private SingleLeagueInfo CombineRankings(SingleLeagueInfo wslInfo, SingleLeagueInfo fsInfo)
@@ -83,7 +134,7 @@ namespace JokesWebApp.Controllers
                     + fsInfo.Members.Where(x => x.TeamName == fsTeamName).FirstOrDefault().Points;
                 totalInfo.Members.Add(temp);
             }
-            totalInfo.Members = totalInfo.Members.OrderByDescending(mem => mem.Points).ToList();
+            totalInfo.Members = totalInfo.Members.OrderBy(mem => mem.rankingPoints).ToList();
             // now that its ordered, we need to compute ranking
             int rank = 0;
             decimal prevPoints = 0;
@@ -185,9 +236,14 @@ namespace JokesWebApp.Controllers
                 // Grab the latest event total
                 var eventTotals = team.Descendants("div")
                     .Where(node => node.GetAttributeValue("class", "").Contains("memhead-digits")).FirstOrDefault();
-                // Grab last even total from list
-                var total = eventTotals.Descendants("span").LastOrDefault().InnerText.Trim();
-                tempMember.Points = decimal.Parse(total);
+                var pointTotals = eventTotals.InnerHtml;
+                string pattern = @"<div class=""mem-digit"">\s*<span>(\d+)</span>\s*</div>";
+                MatchCollection matches = Regex.Matches(pointTotals, pattern);
+                if (ContestId <= matches.Count)
+                {
+                    string nthValue = matches[ContestId-1].Groups[1].Value;
+                    tempMember.Points = decimal.Parse(nthValue);
+                }
 
                 // Grab the team ID while we are here
                 // href = "/team/mens/?user=TEAMID"
@@ -222,9 +278,6 @@ namespace JokesWebApp.Controllers
                 member.rank = rank;
                 prevPoints = member.Points;
             }
-
-            
-
             return leagueInfo;
         }
 
@@ -278,7 +331,13 @@ namespace JokesWebApp.Controllers
                 var teamPoints = team.Descendants("td")
                     .FirstOrDefault(node => node.GetAttributeValue("class", "").Contains("groupTeamPts"))
                     ?.InnerText.Trim();
-                tempMember.Points = decimal.Parse(teamPoints);
+                if (teamPoints != null)
+                {
+                    tempMember.Points = decimal.Parse(teamPoints);
+                } else
+                {
+                    tempMember.Points = 0;
+                }
                 // get owner name from db
                 var firstName = _context.MemberInfo.Where(x => x.WslName == tempMember.TeamName).Select(x => x.FirstName).FirstOrDefault();
                 var lastName = _context.MemberInfo.Where(x => x.WslName == tempMember.TeamName).Select(x => x.LastName).FirstOrDefault();

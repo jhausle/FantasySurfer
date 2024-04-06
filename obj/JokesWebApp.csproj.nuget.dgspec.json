@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\john.hausle\\source\\repos\\JokesWebApp\\JokesWebApp.csproj": {}
+    "C:\\Users\\john.hausle\\source\\repos\\FantasySurfer\\JokesWebApp.csproj": {}
   },
   "projects": {
-    "C:\\Users\\john.hausle\\source\\repos\\JokesWebApp\\JokesWebApp.csproj": {
+    "C:\\Users\\john.hausle\\source\\repos\\FantasySurfer\\JokesWebApp.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\john.hausle\\source\\repos\\JokesWebApp\\JokesWebApp.csproj",
+        "projectUniqueName": "C:\\Users\\john.hausle\\source\\repos\\FantasySurfer\\JokesWebApp.csproj",
         "projectName": "JokesWebApp",
-        "projectPath": "C:\\Users\\john.hausle\\source\\repos\\JokesWebApp\\JokesWebApp.csproj",
+        "projectPath": "C:\\Users\\john.hausle\\source\\repos\\FantasySurfer\\JokesWebApp.csproj",
         "packagesPath": "C:\\Users\\john.hausle\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\john.hausle\\source\\repos\\JokesWebApp\\obj\\",
+        "outputPath": "C:\\Users\\john.hausle\\source\\repos\\FantasySurfer\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"

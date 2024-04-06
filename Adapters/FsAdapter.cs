@@ -10,19 +10,39 @@ namespace JokesWebApp.Adapters
     {
         public static SingleLeagueInfo LoadLeagueInfo(ApplicationDbContext context, int contestId)
         {
-            var wslInfo = new SingleLeagueInfo();
+            var leagueInfo = new SingleLeagueInfo();
             var memberInfo = context.MemberInfo.ToList();
             foreach (var member in memberInfo)
             {
                 var lm = new LeagueMember();
                 var points = context.Points
-                    .Where(x => x.LeagueId == "1" && x.ContestId == contestId.ToString() && x.TeamId == member.Id)
+                    .Where(x => x.LeagueId == "FS" && x.ContestId == contestId.ToString() && x.TeamId == member.Id.ToString())
                     .Select(x => x.Value).FirstOrDefault();
                 lm.TeamName = member.FsName;
                 lm.Points = points;
-                wslInfo.Members.Add(lm);
+                lm.OwnerName = member.FirstName + " " + member.LastName;
+                leagueInfo.Members.Add(lm);
             }
-            return wslInfo;
+            leagueInfo.Members = leagueInfo.Members.OrderByDescending(mem => mem.Points).ToList();
+
+            // now that its ordered, we need to compute ranking
+            int rank = 0;
+            decimal prevPoints = 0;
+            int numTied = 1;
+            foreach(var member in leagueInfo.Members)
+            {
+                if (member.Points != prevPoints)
+                {
+                    rank += numTied;
+                    numTied = 1;
+                } else
+                {
+                    numTied++;
+                }
+                member.rank = rank;
+                prevPoints = member.Points;
+            }
+            return leagueInfo;
         }
 
         public static FsRoster GetRoster(ApplicationDbContext context, int memberId, int contestId)

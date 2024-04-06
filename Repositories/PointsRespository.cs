@@ -10,7 +10,7 @@ namespace JokesWebApp.Repositories
         public static decimal GetPointsByContestAndTeam(ApplicationDbContext context, string contestId, int teamId, string leagueId)
         {
             return context.Points
-                .Where(x => x.ContestId == contestId && x.TeamId == teamId && x.LeagueId == leagueId)
+                .Where(x => x.ContestId == contestId && x.TeamId == teamId.ToString() && x.LeagueId == leagueId)
                 .Select(x => x.Value)
                 .FirstOrDefault();
         }
@@ -22,7 +22,7 @@ namespace JokesWebApp.Repositories
                 .Select(x => new { x.TeamId, x.Value })
                 .ToList();
 
-            return pointsList.ToDictionary(p => p.TeamId, p => p.Value);
+            return pointsList.ToDictionary(p => int.Parse(p.TeamId), p => p.Value);
         }
     }
 }

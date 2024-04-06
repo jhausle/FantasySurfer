@@ -15,11 +15,31 @@ namespace JokesWebApp.Adapters
             {
                 var lm = new LeagueMember();
                 var points = context.Points
-                    .Where(x => x.LeagueId == "2" && x.ContestId == contestId.ToString() && x.TeamId == member.Id)
+                    .Where(x => x.LeagueId == "WSL" && x.ContestId == contestId.ToString() && x.TeamId == member.Id.ToString())
                     .Select(x => x.Value).FirstOrDefault();
                 lm.TeamName = member.WslName;
                 lm.Points = points;
+                lm.OwnerName = member.FirstName + " " + member.LastName;
                 wslInfo.Members.Add(lm);
+            }
+            wslInfo.Members = wslInfo.Members.OrderByDescending(mem => mem.Points).ToList();
+
+            // now that its ordered, we need to compute ranking
+            int rank = 0;
+            decimal prevPoints = 0;
+            int numTied = 1;
+            foreach(var member in wslInfo.Members)
+            {
+                if (member.Points != prevPoints)
+                {
+                    rank += numTied;
+                    numTied = 1;
+                } else
+                {
+                    numTied++;
+                }
+                member.rank = rank;
+                prevPoints = member.Points;
             }
             return wslInfo;
         }

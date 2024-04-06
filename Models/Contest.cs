@@ -9,8 +9,8 @@ namespace JokesWebApp.Models
         public string Description { get; set; }
         public string Year { get; set; }
         public string Country { get; set; }
-        public bool IsCompleted { get; set; }
+        public bool IsComplete { get; set; }
         public bool IsActive { get; set; }
-        public DateTime LastUpdatedAt { get; set; }
+        public DateTime? LastUpdatedAt { get; set; }
     }
 }
